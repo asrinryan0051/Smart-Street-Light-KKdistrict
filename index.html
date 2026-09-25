@@ -1,1070 +1,1368 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hybrid Smart Microgrid — Urban / Coastal Switch</title>
-    <style>
-        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        :root {
-            --bg-primary:#0a0e17;
-            --bg-secondary:#111827;
-            --bg-tertiary:#1a2235;
-            --bg-card:#151d2e;
-            --cyan:#00e5ff;
-            --cyan-dim:#00e5ff44;
-            --cyan-glow:#00e5ff22;
-            --purple:#b44aff;
-            --purple-dim:#b44aff44;
-            --purple-glow:#b44aff22;
-            --amber:#ffab00;
-            --amber-dim:#ffab0044;
-            --green:#00e676;
-            --red:#ff1744;
-            --text-primary:#e8eaed;
-            --text-secondary:#9aa0a6;
-            --text-dim:#5f6368;
-            --border:#1e2a3a;
-            --border-light:#2a3a4e;
-        }
-        body {
-            font-family:'Segoe UI','SF Pro Display',-apple-system,BlinkMacSystemFont,sans-serif;
-            background:var(--bg-primary);
-            color:var(--text-primary);
-            overflow:hidden;
-            height:100vh; width:100vw;
-        }
-        .dashboard {
-            display:grid;
-            grid-template-rows:56px 1fr 220px;
-            height:100vh; width:100vw;
-        }
-        /* HEADER */
-        .header {
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            padding:0 18px;
-            background:var(--bg-secondary);
-            border-bottom:1px solid var(--border);
-            z-index:10;
-            gap:12px;
-        }
-        .header-left { display:flex; align-items:center; gap:12px; min-width:220px; }
-        .header-logo {
-            width:32px;height:32px;
-            background:linear-gradient(135deg,var(--cyan),var(--purple));
-            border-radius:8px;
-            display:flex;align-items:center;justify-content:center;
-            font-weight:900;font-size:14px;color:var(--bg-primary);
-        }
-        .header-title { font-size:14px; font-weight:700; letter-spacing:0.4px; }
-        .header-subtitle { font-size:10px; color:var(--text-secondary); margin-top:1px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Street Light Monitoring System - Production Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* MODE SWITCH */
-        .mode-switch {
-            display:flex;
-            align-items:center;
-            background:var(--bg-tertiary);
-            border:1px solid var(--border);
-            border-radius:24px;
-            padding:3px;
-            gap:2px;
-        }
-        .mode-btn {
-            padding:6px 16px;
-            border-radius:18px;
-            border:none;
-            font-size:12px;
-            font-weight:600;
-            letter-spacing:0.4px;
-            cursor:pointer;
-            background:transparent;
-            color:var(--text-secondary);
-            transition:all 0.25s ease;
-            display:flex;align-items:center;gap:6px;
-        }
-        .mode-btn.active.coastal {
-            background:var(--cyan);
-            color:#00141a;
-            box-shadow:0 0 12px var(--cyan-dim);
-        }
-        .mode-btn.active.urban {
-            background:var(--purple);
-            color:white;
-            box-shadow:0 0 12px var(--purple-dim);
-        }
-        .mode-btn .dot {
-            width:7px;height:7px;border-radius:50%;
-            background:currentColor;opacity:0.6;
-        }
+  body {
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #f4f7f9;
+    color: #1e293b;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
 
-        .metrics-bar { display:flex; align-items:center; gap:4px; }
-        .metric-card {
-            background:var(--bg-tertiary);
-            border:1px solid var(--border);
-            border-radius:8px;
-            padding:6px 12px;
-            display:flex;flex-direction:column;align-items:center;
-            min-width:92px;
-        }
-        .metric-label { font-size:8px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:1px; }
-        .metric-value { font-size:16px; font-weight:700; font-family:'Courier New',monospace; }
-        .metric-value.cyan { color:var(--cyan); }
-        .metric-value.purple { color:var(--purple); }
-        .metric-value.amber { color:var(--amber); }
-        .metric-value.green { color:var(--green); }
+  .header {
+    text-align: center;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #0f172a, #1e293b, #0f172a);
+    border-bottom: 3px solid #3b82f6;
+    position: relative;
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  }
+  .header h1 {
+    font-size: 1.6rem;
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .header p { font-size: 0.85rem; color: #94a3b8; margin-top: 5px; font-weight: 500; }
 
-        .header-right { display:flex; align-items:center; gap:14px; }
-        .status-badge { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--green); }
-        .status-dot { width:8px;height:8px; background:var(--green); border-radius:50%; animation:pulse-dot 2s infinite; }
-        @keyframes pulse-dot { 0%,100%{opacity:1;box-shadow:0 0 4px var(--green)} 50%{opacity:0.5;box-shadow:0 0 8px var(--green)} }
-        .fps-counter { font-size:11px; font-family:'Courier New',monospace; color:var(--text-dim); min-width:55px; text-align:right; }
+  .main-container { position: relative; width: 100%; padding: 10px; }
 
-        /* MAIN AREA */
-        .main-area { position:relative; overflow:hidden; }
-        #mainCanvas { display:block; width:100%; height:100%; }
+  .arch-label {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #3b82f6;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin: 12px 0 8px;
+    font-weight: 800;
+  }
 
-        .zone-label {
-            position:absolute; top:14px; font-size:11px; font-weight:700;
-            letter-spacing:2px; text-transform:uppercase;
-            padding:6px 14px; border-radius:6px; pointer-events:none;
-            transition:all 0.3s;
-        }
-        .zone-label.coastal { left:20px; color:var(--cyan); background:var(--cyan-glow); border:1px solid var(--cyan-dim); }
-        .zone-label.urban { left:20px; color:var(--purple); background:var(--purple-glow); border:1px solid var(--purple-dim); }
-        .zone-label.hub { left:50%; transform:translateX(-50%); color:var(--amber); background:#ffab0011; border:1px solid var(--amber-dim); }
+  /* ============ MODERN POLES ARCHITECTURE ============ */
+  .road-container {
+    position: relative;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 10px 10px;
+  }
 
-        .instructions {
-            position:absolute; bottom:12px; left:50%; transform:translateX(-50%);
-            font-size:11px; color:var(--text-dim); background:var(--bg-secondary);
-            padding:6px 16px; border-radius:20px; border:1px solid var(--border);
-            pointer-events:none; white-space:nowrap;
-        }
+  .road {
+    position: relative;
+    height: 38px;
+    background: linear-gradient(180deg, #475569, #64748b, #475569);
+    border-radius: 4px;
+    margin: 0 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .road::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 2%; right: 2%;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, #fcd34d 0, #fcd34d 30px, transparent 30px, transparent 60px);
+    transform: translateY(-50%);
+  }
 
-        /* DETAIL PANEL */
-        .detail-panel {
-            position:absolute;
-            top:58px; right:16px;
-            width:380px;
-            max-height:calc(100% - 70px);
-            background:rgba(21,29,46,0.96);
-            backdrop-filter:blur(12px);
-            border:1px solid var(--border-light);
-            border-radius:14px;
-            box-shadow:0 16px 48px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.04) inset;
-            z-index:50;
-            overflow:hidden;
-            display:flex;flex-direction:column;
-            transition:transform 0.35s cubic-bezier(0.2,0.8,0.2,1), opacity 0.25s;
-        }
-        .detail-panel.hidden { transform:translateX(420px); opacity:0; pointer-events:none; }
-        .detail-panel-header {
-            display:flex; align-items:center; justify-content:space-between;
-            padding:14px 16px;
-            border-bottom:1px solid var(--border);
-            background:var(--bg-tertiary);
-        }
-        .detail-title-group { display:flex; align-items:center; gap:10px; }
-        .detail-icon {
-            width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;
-            font-size:14px;font-weight:800;
-        }
-        .detail-icon.coastal { background:var(--cyan-glow); color:var(--cyan); border:1px solid var(--cyan-dim); }
-        .detail-icon.urban { background:var(--purple-glow); color:var(--purple); border:1px solid var(--purple-dim); }
-        .detail-icon.hub { background:#ffab0011; color:var(--amber); border:1px solid var(--amber-dim); }
-        .detail-title { font-size:13px; font-weight:700; letter-spacing:0.3px; }
-        .detail-subtitle { font-size:10px; color:var(--text-secondary); margin-top:1px; }
-        .detail-close {
-            width:26px;height:26px;border-radius:50%;border:1px solid var(--border);
-            background:var(--bg-secondary);color:var(--text-secondary);
-            cursor:pointer;display:flex;align-items:center;justify-content:center;
-            font-size:16px;line-height:1;
-        }
-        .detail-close:hover { background:var(--bg-tertiary); color:var(--text-primary); }
-        .detail-body { padding:14px 16px 6px; display:flex; flex-direction:column; gap:10px; overflow-y:auto; }
-        .detail-row { display:flex; justify-content:space-between; align-items:center; font-size:11px; }
-        .detail-label { color:var(--text-secondary); }
-        .detail-value { font-family:'Courier New',monospace; font-weight:600; }
-        .detail-divider { height:1px; background:var(--border); margin:4px 0; }
-        .detail-json-label {
-            font-size:10px; text-transform:uppercase; letter-spacing:1px;
-            color:var(--text-dim); padding:10px 16px 6px;
-            border-top:1px solid var(--border); margin-top:6px;
-            background:var(--bg-tertiary);
-        }
-        pre#detailJson {
-            margin:0; padding:12px 16px 14px;
-            font-family:'Courier New','Fira Code',monospace;
-            font-size:11px; line-height:1.5;
-            background:#0a0e17;
-            color:var(--green);
-            overflow:auto;
-            max-height:220px;
-            border-top:1px solid var(--border);
-        }
-        .badge {
-            font-size:9px; padding:2px 6px; border-radius:4px;
-            font-weight:700; letter-spacing:0.5px; text-transform:uppercase;
-        }
-        .badge.cyan { background:var(--cyan-glow); color:var(--cyan); border:1px solid var(--cyan-dim); }
-        .badge.purple { background:var(--purple-glow); color:var(--purple); border:1px solid var(--purple-dim); }
-        .badge.amber { background:#ffab0011; color:var(--amber); border:1px solid var(--amber-dim); }
+  .poles-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    padding: 0 30px;
+    margin-top: -10px;
+    position: relative;
+    min-height: 180px;
+  }
 
-        /* TERMINAL */
-        .terminal-panel {
-            display:grid; grid-template-columns:1fr 280px;
-            background:var(--bg-secondary); border-top:1px solid var(--border);
-        }
-        .terminal { display:flex; flex-direction:column; border-right:1px solid var(--border); }
-        .terminal-header {
-            display:flex; align-items:center; gap:8px;
-            padding:8px 16px; border-bottom:1px solid var(--border); background:var(--bg-tertiary);
-        }
-        .terminal-dot { width:10px;height:10px;border-radius:50%; }
-        .terminal-dot.red{background:#ff5f57;} .terminal-dot.yellow{background:#febc2e;} .terminal-dot.green{background:#28c840;}
-        .terminal-title { font-size:12px; font-weight:600; color:var(--text-secondary); margin-left:8px; flex:1; }
-        .terminal-body {
-            flex:1; overflow-y:auto; padding:8px 16px;
-            font-family:'Courier New','Fira Code',monospace; font-size:11px; line-height:1.6; scroll-behavior:smooth;
-        }
-        .terminal-body::-webkit-scrollbar{width:6px;} .terminal-body::-webkit-scrollbar-track{background:transparent;}
-        .terminal-body::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:3px;}
-        .log-entry { margin-bottom:2px; animation:fadeIn 0.3s ease; }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
-        .log-timestamp{color:var(--text-dim);}
-        .log-wifi{color:var(--cyan);} .log-lora{color:var(--purple);} .log-hub{color:var(--amber);}
-        .log-system{color:var(--text-dim);font-style:italic;} .log-json{color:var(--green);} .log-hex{color:var(--red);}
+  .pole-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+  }
+  .pole-unit:hover { transform: translateY(-5px) scale(1.05); }
 
-        .info-sidebar { padding:12px 16px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; }
-        .info-card { background:var(--bg-tertiary); border:1px solid var(--border); border-radius:8px; padding:12px; }
-        .info-card-title { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:8px; }
-        .info-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:11px; }
-        .info-label { color:var(--text-secondary); }
-        .info-value { font-family:'Courier New',monospace; font-weight:600; }
-        .duty-bar { width:100%; height:6px; background:var(--bg-primary); border-radius:3px; margin-top:6px; overflow:hidden; }
-        .duty-fill { height:100%; border-radius:3px; transition:width 0.5s ease; }
+  .pole-label {
+    font-size: 0.6rem;
+    color: #475569;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
 
-        .tooltip {
-            position:absolute; background:var(--bg-card); border:1px solid var(--border-light);
-            border-radius:8px; padding:10px 14px; font-size:11px; pointer-events:none;
-            opacity:0; transition:opacity 0.2s ease; z-index:100; max-width:240px;
-            box-shadow:0 8px 32px rgba(0,0,0,0.6);
-        }
-        .tooltip.visible{opacity:1;}
-        .tooltip-name{font-weight:700;margin-bottom:4px;}
-        .tooltip-detail{color:var(--text-secondary);line-height:1.5;white-space:pre-line;}
+  .gateway-badge {
+    font-size: 0.5rem;
+    background: #ef4444;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+    animation: pulse-badge 2s infinite;
+  }
+  @keyframes pulse-badge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-        @media (max-width:1100px){
-            .dashboard{grid-template-rows:56px 1fr 200px;}
-            .metrics-bar{display:none;}
-            .detail-panel{width:340px;}
-        }
-    </style>
+  .sensor-icons { display: flex; gap: 3px; margin-bottom: -15px; z-index: 5; }
+  .sensor-icon {
+    font-size: 0.65rem;
+    background: #ffffff;
+    border-radius: 50%;
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  /* SVG Street Pole Design */
+  .pole-svg-container {
+    position: relative;
+    width: 60px;
+    height: 110px;
+  }
+  .light-glow {
+    position: absolute;
+    top: 25px; left: -10px;
+    width: 0; height: 0;
+    border-left: 35px solid transparent;
+    border-right: 35px solid transparent;
+    border-top: 70px solid rgba(253,216,53,0.15);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    filter: blur(4px);
+    z-index: -1;
+  }
+  .light-flare {
+    position: absolute;
+    top: 18px; left: 16px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #fef08a;
+    box-shadow: 0 0 15px 5px #fde047, 0 0 30px 10px rgba(253,216,53,0.6);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .pole-unit.on .light-glow { opacity: 1; }
+  .pole-unit.on .light-flare { opacity: 1; }
+  .pole-unit.fault .light-flare { 
+    opacity: 1; 
+    background: #fca5a5; 
+    box-shadow: 0 0 15px 5px #f87171; 
+    animation: fault-strobe 1s infinite; 
+  }
+  
+  @keyframes fault-strobe { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  .esp-chip {
+    font-size: 0.48rem;
+    background: #f8fafc;
+    color: #334155;
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-top: 4px;
+    font-weight: 700;
+    border: 1px solid #cbd5e1;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  /* LoRa Lines */
+  .comm-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+  .lora-line { stroke: #3b82f6; stroke-width: 2; stroke-dasharray: 6 4; opacity: 0.5; animation: dash-flow 1.5s linear infinite; }
+  .lora-line.peer { stroke: #8b5cf6; stroke-dasharray: 4 3; }
+  @keyframes dash-flow { to { stroke-dashoffset: -20; } }
+
+  /* ============ PROFESSIONAL LAYER UI ============ */
+  .layers-container, .logic-container {
+    display: flex; justify-content: center; gap: 12px;
+    margin: 15px auto; max-width: 1100px; padding: 0 10px; flex-wrap: wrap;
+  }
+
+  .layer-box, .logic-box {
+    flex: 1; min-width: 180px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    transition: all 0.3s;
+  }
+  .layer-box:hover, .logic-box:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: #cbd5e1; }
+
+  .layer-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .layer-title { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .layer-desc { font-size: 0.65rem; color: #64748b; line-height: 1.5; font-weight: 500; }
+  
+  .logic-box h3 { font-size: 0.75rem; color: #0f172a; margin-bottom: 12px; font-weight: 800; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+
+  /* Time & Status */
+  .time-display { font-size: 1.8rem; font-weight: 800; text-align: center; color: #2563eb; font-family: ui-monospace, SFMono-Regular, monospace; margin: 8px 0; }
+  .ldr-bar-container { height: 12px; background: #f1f5f9; border-radius: 6px; overflow: hidden; margin: 10px 0; border: 1px inset #e2e8f0; }
+  .ldr-bar { height: 100%; transition: width 0.5s; background: linear-gradient(90deg, #3b82f6, #60a5fa, #fde047); }
+  
+  .status-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; padding: 6px 0; border-bottom: 1px solid #f8fafc; font-weight: 600; color: #475569; }
+  .status-val { font-weight: 700; padding: 3px 8px; border-radius: 6px; font-size: 0.62rem; }
+  .status-val.on { background: #dcfce7; color: #166534; }
+  .status-val.off { background: #fee2e2; color: #991b1b; }
+  .status-val.override { background: #fef9c3; color: #854d0e; }
+
+  /* Controls & Flow */
+  .controls { display: flex; justify-content: center; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+  .ctrl-btn {
+    background: #ffffff; border: 1px solid #cbd5e1; color: #334155;
+    padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 0.7rem; font-weight: 700;
+    transition: all 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+  .ctrl-btn:hover { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+  .ctrl-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+  /* Cloud Flow Node */
+  .cloud-flow { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px auto; max-width: 750px; background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+  .flow-node { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 18px; text-align: center; font-size: 0.7rem; font-weight: 700; color: #334155; }
+  .flow-arrow { display: flex; flex-direction: column; align-items: center; gap: 2px; color: #94a3b8; font-size: 0.55rem; font-weight: 700; }
+  .flow-arrow span:last-child { color: #3b82f6; font-size: 1.2rem; animation: arrow-pulse 1.5s infinite; }
+  @keyframes arrow-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  /* Event Log */
+  .event-log { max-height: 130px; overflow-y: auto; font-size: 0.62rem; font-family: ui-monospace, monospace; }
+  .log-entry { padding: 5px 8px; border-left: 3px solid; margin-bottom: 4px; border-radius: 0 4px 4px 0; animation: log-in 0.3s ease-out; font-weight: 600; }
+  .log-entry.event-on { border-color: #22c55e; background: #f0fdf4; color: #166534; }
+  .log-entry.event-off { border-color: #ef4444; background: #fef2f2; color: #991b1b; }
+  .log-entry.heartbeat { border-color: #3b82f6; background: #eff6ff; color: #1e3a8a; }
+  @keyframes log-in { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* Cloud Dashboard Button */
+  .cloud-icon-btn {
+    position: fixed; bottom: 25px; right: 25px; width: 64px; height: 64px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 100;
+    box-shadow: 0 10px 25px rgba(37,99,235,0.4); border: 3px solid #bfdbfe;
+    animation: cloud-breathe 3s ease-in-out infinite; font-size: 1.8rem;
+  }
+  .cloud-icon-btn:hover { transform: scale(1.1); }
+  @keyframes cloud-breathe { 0%, 100% { box-shadow: 0 10px 25px rgba(37,99,235,0.4); } 50% { box-shadow: 0 10px 35px rgba(37,99,235,0.7), 0 0 20px #60a5fa; } }
+
+  /* ============ PRODUCTION GOOGLE MAPS DASHBOARD ============ */
+  .dashboard-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 200; display: none;
+  }
+  .dashboard-overlay.show { display: block; }
+  
+  .dashboard-panel {
+    width: 100%; height: 100vh;
+    background: #ffffff;
+    display: flex; flex-direction: column;
+  }
+
+  /* ============ GOOGLE MAPS HEADER ============ */
+  .gmaps-header {
+    height: 64px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    z-index: 20;
+  }
+
+  .gmaps-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1e40af;
+    cursor: pointer;
+  }
+
+  .gmaps-search {
+    flex: 1;
+    max-width: 500px;
+    position: relative;
+  }
+
+  .gmaps-search input {
+    width: 100%;
+    padding: 10px 16px 10px 45px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .gmaps-search input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .gmaps-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 1.1rem;
+  }
+
+  .gmaps-nav {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .gmaps-nav-btn {
+    padding: 8px 16px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .gmaps-nav-btn:hover {
+    background: #f9fafb;
+  }
+
+  .gmaps-nav-btn.active {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1e40af;
+  }
+
+  /* ============ MAP BODY ============ */
+  .gmaps-body {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Main Map Canvas */
+  .gmaps-canvas {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #e5e3df;
+    /* Google Maps terrain texture */
+    background-image: 
+      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23e5e3df" width="100" height="100"/><g opacity="0.03"><circle cx="20" cy="30" r="15" fill="%23000"/><circle cx="70" cy="60" r="20" fill="%23000"/><circle cx="40" cy="80" r="12" fill="%23000"/></g></svg>');
+    background-size: 200px 200px;
+  }
+
+  /* Roads */
+  .gmap-road {
+    position: absolute;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    transition: all 0.3s;
+  }
+
+  .gmap-road::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: repeating-linear-gradient(
+      90deg,
+      #fbbf24 0px,
+      #fbbf24 15px,
+      transparent 15px,
+      transparent 30px
+    );
+    transform: translateY(-50%);
+  }
+
+  .gmap-road.vertical::before {
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: auto;
+    width: 1px;
+    height: auto;
+    transform: translateX(-50%);
+    background: repeating-linear-gradient(
+      0deg,
+      #fbbf24 0px,
+      #fbbf24 15px,
+      transparent 15px,
+      transparent 30px
+    );
+  }
+
+  .gmap-road-label {
+    position: absolute;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1f2937;
+    text-shadow: 
+      -1px -1px 0 #fff, 1px -1px 0 #fff,
+      -1px 1px 0 #fff, 1px 1px 0 #fff,
+      0 0 3px rgba(255,255,255,0.9);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* Street Light Markers */
+  .gmap-marker {
+    position: absolute;
+    width: 28px;
+    height: 36px;
+    transform: translate(-50%, -100%);
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 0.2s, z-index 0s;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+  }
+
+  .gmap-marker:hover {
+    transform: translate(-50%, -100%) scale(1.2);
+    z-index: 1000;
+  }
+
+  .gmap-marker.active {
+    z-index: 999;
+  }
+
+  /* Marker Icons (Google Maps style pins) */
+  .marker-icon-on {
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 36"><path d="M14 0C8.48 0 4 4.48 4 10c0 7.5 10 26 10 26s10-18.5 10-26c0-5.52-4.48-10-10-10z" fill="%2316a34a"/><circle cx="14" cy="10" r="5" fill="%23ffffff"/><path d="M14 7 l1.5 3 l3.3 0.5 l-2.4 2.3 l0.6 3.2 l-3-1.6 l-3 1.6 l0.6-3.2 l-2.4-2.3 l3.3-0.5 z" fill="%2316a34a" stroke="%23ffffff" stroke-width="0.5"/></svg>') no-repeat center;
+    background-size: contain;
+    width: 100%;
+    height: 100%;
+  }
+
+  .marker-icon-off {
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 36"><path d="M14 0C8.48 0 4 4.48 4 10c0 7.5 10 26 10 26s10-18.5 10-26c0-5.52-4.48-10-10-10z" fill="%23dc2626"/><circle cx="14" cy="10" r="5" fill="%23ffffff"/><rect x="11" y="8" width="6" height="1.5" fill="%23dc2626" rx="0.75"/></svg>') no-repeat center;
+    background-size: contain;
+    width: 100%;
+    height: 100%;
+  }
+
+  .marker-icon-fault {
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 36"><path d="M14 0C8.48 0 4 4.48 4 10c0 7.5 10 26 10 26s10-18.5 10-26c0-5.52-4.48-10-10-10z" fill="%23f59e0b"/><circle cx="14" cy="10" r="5" fill="%23ffffff"/><text x="14" y="13" text-anchor="middle" font-size="8" font-weight="bold" fill="%23f59e0b">!</text></svg>') no-repeat center;
+    background-size: contain;
+    width: 100%;
+    height: 100%;
+    animation: fault-pulse 1.5s infinite;
+  }
+
+  @keyframes fault-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Info Card (Google Maps style) */
+  .gmap-info-card {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 180px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 2000;
+  }
+
+  .gmap-marker:hover .gmap-info-card,
+  .gmap-marker.active .gmap-info-card {
+    opacity: 1;
+  }
+
+  .gmap-info-card::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #ffffff;
+  }
+
+  .info-card-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 6px;
+  }
+
+  .info-card-detail {
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+
+  .info-card-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .info-card-status.on {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .info-card-status.off {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .info-card-status.fault {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  /* ============ SIDEBAR (Left Panel) ============ */
+  .gmaps-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 340px;
+    height: 100%;
+    background: #ffffff;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s;
+  }
+
+  .gmaps-sidebar.collapsed {
+    transform: translateX(-340px);
+  }
+
+  .sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .sidebar-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+  }
+
+  .sidebar-header .ward-name {
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 600;
+  }
+
+  .sidebar-stats {
+    padding: 16px 20px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .sidebar-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .sidebar-stat-item:last-child {
+    border-bottom: none;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 600;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+  }
+
+  .sidebar-roads {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 0;
+  }
+
+  .sidebar-road-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .sidebar-road-item:hover {
+    background: #f9fafb;
+  }
+
+  .sidebar-road-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 6px;
+  }
+
+  .sidebar-road-stats {
+    font-size: 0.7rem;
+    color: #6b7280;
+  }
+
+  /* Sidebar Toggle Button */
+  .sidebar-toggle {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    width: 36px;
+    height: 60px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+    z-index: 16;
+    transition: left 0.3s;
+  }
+
+  .gmaps-sidebar.collapsed + .sidebar-toggle {
+    left: 0;
+  }
+
+  .gmaps-sidebar:not(.collapsed) + .sidebar-toggle {
+    left: 340px;
+  }
+
+  /* ============ MAP CONTROLS ============ */
+  .map-zoom-controls {
+    position: absolute;
+    bottom: 140px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 10;
+  }
+
+  .zoom-btn {
+    width: 40px;
+    height: 40px;
+    background: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-size: 1.3rem;
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .zoom-btn:hover {
+    background: #f3f4f6;
+  }
+
+  .map-layer-toggle {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    overflow: hidden;
+    z-index: 10;
+  }
+
+  .layer-toggle-btn {
+    padding: 10px 16px;
+    border: none;
+    background: #ffffff;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    transition: background 0.2s;
+    border-bottom: 1px solid #e5e7eb;
+    width: 140px;
+    text-align: left;
+  }
+
+  .layer-toggle-btn:last-child {
+    border-bottom: none;
+  }
+
+  .layer-toggle-btn:hover {
+    background: #f9fafb;
+  }
+
+  .layer-toggle-btn.active {
+    background: #eff6ff;
+    color: #1e40af;
+  }
+
+  /* Map Legend */
+  .map-legend {
+    position: absolute;
+    bottom: 20px;
+    left: 380px;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    z-index: 10;
+    transition: left 0.3s;
+  }
+
+  .gmaps-sidebar.collapsed ~ .map-legend {
+    left: 20px;
+  }
+
+  .legend-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 0.75rem;
+    color: #4b5563;
+    font-weight: 600;
+  }
+
+  .legend-marker {
+    width: 20px;
+    height: 26px;
+    flex-shrink: 0;
+  }
+
+  /* Satellite View */
+  .gmaps-canvas.satellite {
+    background: #2d3436;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%232d3436" width="200" height="200"/><g opacity="0.4"><circle cx="40" cy="60" r="30" fill="%234a5568"/><circle cx="150" cy="120" r="40" fill="%234a5568"/><circle cx="80" cy="160" r="25" fill="%234a5568"/></g></svg>');
+  }
+
+  .gmaps-canvas.satellite .gmap-road {
+    background: rgba(100, 116, 139, 0.5);
+  }
+
+  .gmaps-canvas.satellite .gmap-road::before {
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(251, 191, 36, 0.4) 0px,
+      rgba(251, 191, 36, 0.4) 15px,
+      transparent 15px,
+      transparent 30px
+    );
+  }
+
+  .gmaps-canvas.satellite .gmap-road-label {
+    color: #e5e7eb;
+    text-shadow: 
+      -1px -1px 2px #000, 1px -1px 2px #000,
+      -1px 1px 2px #000, 1px 1px 2px #000;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .gmaps-sidebar { width: 280px; }
+    .gmaps-sidebar:not(.collapsed) + .sidebar-toggle { left: 280px; }
+    .map-legend { left: 300px; }
+    .gmaps-sidebar.collapsed ~ .map-legend { left: 20px; }
+    .gmaps-search { max-width: 300px; }
+  }
+</style>
 </head>
 <body>
-<div class="dashboard">
-    <header class="header">
-        <div class="header-left">
-            <div class="header-logo">MG</div>
-            <div>
-                <div class="header-title">Hybrid Smart Microgrid</div>
-                <div class="header-subtitle" id="headerSubtitle">Coastal Mesh • 20 Nodes • Multi-Hop</div>
-            </div>
-        </div>
 
-        <div class="mode-switch" id="modeSwitch">
-            <button class="mode-btn coastal active" data-mode="coastal">
-                <span class="dot"></span> 🌊 Coastal — Mesh
-            </button>
-            <button class="mode-btn urban" data-mode="urban">
-                <span class="dot"></span> 🏙️ Urban — LoRa
-            </button>
-        </div>
-
-        <div class="metrics-bar">
-            <div class="metric-card">
-                <span class="metric-label" id="m1Label">Mesh Hops</span>
-                <span class="metric-value cyan" id="metricHops">0</span>
-            </div>
-            <div class="metric-card">
-                <span class="metric-label" id="m2Label">LoRa Duty %</span>
-                <span class="metric-value purple" id="metricDuty">0.0</span>
-            </div>
-            <div class="metric-card">
-                <span class="metric-label">Sys Latency</span>
-                <span class="metric-value amber" id="metricLatency">0 ms</span>
-            </div>
-            <div class="metric-card">
-                <span class="metric-label">Active Nodes</span>
-                <span class="metric-value green" id="metricActive">0/20</span>
-            </div>
-        </div>
-
-        <div class="header-right">
-            <div class="status-badge"><div class="status-dot"></div><span id="statusText">COASTAL ONLINE</span></div>
-            <div class="fps-counter" id="fpsCounter">60 FPS</div>
-        </div>
-    </header>
-
-    <div class="main-area" id="mainArea">
-        <canvas id="mainCanvas"></canvas>
-        <div class="zone-label coastal" id="zoneLabel">🌊 Coastal Zone — Wi-Fi Mesh • 20 Lights</div>
-        <div class="zone-label hub">⚡ ESP32-S3 Gateway</div>
-        <div class="instructions" id="instructions">Click any coastal light → multi-hop to hub • Click hub for status</div>
-
-        <!-- Detail Panel -->
-        <div class="detail-panel hidden" id="detailPanel">
-            <div class="detail-panel-header">
-                <div class="detail-title-group">
-                    <div class="detail-icon coastal" id="detailIcon">C</div>
-                    <div>
-                        <div class="detail-title" id="detailTitle">Node Details</div>
-                        <div class="detail-subtitle" id="detailSubtitle">Coastal Mesh Node</div>
-                    </div>
-                </div>
-                <button class="detail-close" id="detailCloseBtn">×</button>
-            </div>
-            <div class="detail-body" id="detailBody"></div>
-            <div class="detail-json-label" id="detailJsonLabel">Live Payload — Node → Mesh → Hub</div>
-            <pre id="detailJson">{}</pre>
-        </div>
-    </div>
-
-    <div class="terminal-panel">
-        <div class="terminal">
-            <div class="terminal-header">
-                <span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span>
-                <span class="terminal-title" id="terminalTitle">Network Inspector — Coastal Mesh Traffic</span>
-            </div>
-            <div class="terminal-body" id="terminalBody"></div>
-        </div>
-        <div class="info-sidebar">
-            <div class="info-card" id="infoCard1">
-                <div class="info-card-title" id="infoCard1Title">Wi-Fi Multi-Hop Mesh</div>
-                <div class="info-row"><span class="info-label">Protocol</span><span class="info-value" style="color:var(--cyan)">ESP-NOW 2.4GHz</span></div>
-                <div class="info-row"><span class="info-label">Topology</span><span class="info-value" style="color:var(--cyan)" id="infoTopology">Mesh • 20 Nodes</span></div>
-                <div class="info-row"><span class="info-label">Routing</span><span class="info-value" style="color:var(--cyan)" id="infoRouting">Multi-Hop (BFS)</span></div>
-            </div>
-            <div class="info-card">
-                <div class="info-card-title">Radio Performance</div>
-                <div class="info-row"><span class="info-label">Throughput</span><span class="info-value" style="color:var(--cyan)" id="infoThroughput">~1 Mbps</span></div>
-                <div class="info-row"><span class="info-label">Range / Hop</span><span class="info-value" style="color:var(--cyan)">~200m</span></div>
-                <div class="info-row">
-                    <span class="info-label">Duty / Load</span>
-                    <div style="width:80px"><div class="duty-bar"><div class="duty-fill" id="dutyFill" style="width:0%; background:var(--cyan)"></div></div></div>
-                </div>
-            </div>
-            <div class="info-card">
-                <div class="info-card-title">Gateway Translation</div>
-                <div class="info-row"><span class="info-label">MCU</span><span class="info-value" style="color:var(--amber)">ESP32-S3</span></div>
-                <div class="info-row"><span class="info-label">Mode</span><span class="info-value" style="color:var(--amber)" id="gatewayMode">Mesh Hub</span></div>
-                <div class="info-row"><span class="info-label">Translations</span><span class="info-value" style="color:var(--amber)" id="translationCount">0</span></div>
-            </div>
-        </div>
-    </div>
+<div class="header">
+  <h1>⚡ Smart Street Light Monitoring System</h1>
+  <p>Intelligent LoRa Mesh Network • Real-time Cloud Dashboard • Predictive Analytics</p>
 </div>
 
-<div class="tooltip" id="tooltip">
-    <div class="tooltip-name" id="tooltipName"></div>
-    <div class="tooltip-detail" id="tooltipDetail"></div>
+<div class="main-container">
+  <div class="arch-label">── Hardware & Network Simulation ──</div>
+
+  <div style="display:flex; justify-content:center; gap: 15px; flex-wrap: wrap; align-items: center; margin: 10px 0;">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 8px 16px; background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+      <label style="font-size: 0.7rem; font-weight: 700; color: #475569;">🕐 Time:</label>
+      <input type="range" id="timeSlider" min="0" max="23.99" step="0.01" value="18" style="width: 150px;">
+      <span id="timeDisplay" style="font-size:1rem; font-weight: 800; color:#2563eb; font-family: monospace;">06:00 PM</span>
+    </div>
+    
+    <div class="controls" style="margin: 0;">
+      <button class="ctrl-btn active" onclick="toggleSimulation(this)">▶ Auto Simulate</button>
+      <button class="ctrl-btn" onclick="simulateRain()">🌧️ Rain Override</button>
+      <button class="ctrl-btn" onclick="simulateFault()">⚠️ Inject Fault</button>
+    </div>
+  </div>
+
+  <div style="height: 4px; border-radius: 2px; max-width: 1100px; margin: 10px auto; transition: background 0.5s;" id="skyIndicator"></div>
+
+  <div class="road-container" id="roadContainer">
+    <div class="poles-container" id="polesContainer"></div>
+    <div class="road"></div>
+    <svg class="comm-svg" id="commSvg"></svg>
+  </div>
+
+  <div class="cloud-flow">
+    <div class="flow-node" style="border-left: 4px solid #ef4444;">📡 Gateway (Pole 5)</div>
+    <div class="flow-arrow"><span>WiFi</span><span>➜</span></div>
+    <div class="flow-node">📶 Access Point</div>
+    <div class="flow-arrow"><span>Internet</span><span>➜</span></div>
+    <div class="flow-node" style="border-left: 4px solid #3b82f6;">☁️ Cloud Server</div>
+    <div class="flow-arrow"><span>API</span><span>➜</span></div>
+    <div class="flow-node" style="border-left: 4px solid #22c55e;">📊 Admin Dashboard</div>
+  </div>
+
+  <div class="arch-label">── System Logic & Real-time Logs ──</div>
+  <div class="logic-container">
+    <div class="logic-box">
+      <h3>🕐 Astro Clock Decision</h3>
+      <div class="time-display" id="simTime">06:00 PM</div>
+      <div class="status-row"><span>Schedule</span><span class="status-val on" id="clockRule">ON (6PM-6AM)</span></div>
+      <div class="status-row"><span>Target State</span><span class="status-val on" id="clockDecision">TURN ON</span></div>
+    </div>
+
+    <div class="logic-box">
+      <h3>🔆 LDR Sensor Telemetry</h3>
+      <div class="status-row"><span>Ambient Light</span><span id="ldrValue" style="color:#ea580c; font-weight:800;">25%</span></div>
+      <div class="ldr-bar-container"><div class="ldr-bar" id="ldrBar" style="width:25%"></div></div>
+      <div class="status-row"><span>Logic Override</span><span class="status-val" id="ldrOverride" style="background:#f1f5f9; color:#64748b;">INACTIVE</span></div>
+    </div>
+
+    <div class="logic-box" style="flex: 2; min-width: 300px;">
+      <h3>📋 Live Event Stream</h3>
+      <div class="event-log" id="eventLog">
+        <div class="log-entry heartbeat">System initialized successfully...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cloud Dashboard Button -->
+<div class="cloud-icon-btn" onclick="openDashboard()" title="Open Production Dashboard">☁️</div>
+
+<!-- ============ PRODUCTION GOOGLE MAPS DASHBOARD ============ -->
+<div class="dashboard-overlay" id="dashOverlay">
+  <div class="dashboard-panel">
+    
+    <!-- Header -->
+    <div class="gmaps-header">
+      <div class="gmaps-logo" onclick="closeDashboard()" title="Close Dashboard">
+        <span style="font-size: 1.4rem;">🗺️</span>
+        <span>Street Light Monitor</span>
+      </div>
+
+      <div class="gmaps-search">
+        <div class="gmaps-search-icon">🔍</div>
+        <input type="text" placeholder="Search location, ward, or street..." value="Nagercoil - Ward 6" readonly>
+      </div>
+
+      <div class="gmaps-nav">
+        <button class="gmaps-nav-btn active">Map</button>
+        <button class="gmaps-nav-btn" onclick="alert('Analytics view coming soon!')">Analytics</button>
+        <button class="gmaps-nav-btn" onclick="alert('Reports view coming soon!')">Reports</button>
+      </div>
+    </div>
+
+    <!-- Map Body -->
+    <div class="gmaps-body">
+      
+      <!-- Sidebar -->
+      <div class="gmaps-sidebar" id="gmapsSidebar">
+        <div class="sidebar-header">
+          <h2>Ward Overview</h2>
+          <div class="ward-name">📍 Nagercoil - Ward 6</div>
+        </div>
+
+        <div class="sidebar-stats">
+          <div class="sidebar-stat-item">
+            <span class="stat-label">Total Lights</span>
+            <span class="stat-value" style="color: #3b82f6;" id="sidebarTotal">75</span>
+          </div>
+          <div class="sidebar-stat-item">
+            <span class="stat-label">Active (ON)</span>
+            <span class="stat-value" style="color: #16a34a;" id="sidebarOn">73</span>
+          </div>
+          <div class="sidebar-stat-item">
+            <span class="stat-label">Idle (OFF)</span>
+            <span class="stat-value" style="color: #dc2626;" id="sidebarOff">0</span>
+          </div>
+          <div class="sidebar-stat-item">
+            <span class="stat-label">Faults</span>
+            <span class="stat-value" style="color: #f59e0b;" id="sidebarFault">2</span>
+          </div>
+        </div>
+
+        <div class="sidebar-roads" id="sidebarRoads">
+          <!-- Generated by JS -->
+        </div>
+      </div>
+
+      <!-- Sidebar Toggle -->
+      <div class="sidebar-toggle" onclick="toggleSidebar()">
+        <span id="sidebarToggleIcon">◀</span>
+      </div>
+
+      <!-- Map Canvas -->
+      <div class="gmaps-canvas" id="gmapsCanvas">
+        <!-- Roads and markers generated by JS -->
+      </div>
+
+      <!-- Layer Toggle -->
+      <div class="map-layer-toggle">
+        <button class="layer-toggle-btn active" onclick="switchLayer('default', this)">🗺️ Default</button>
+        <button class="layer-toggle-btn" onclick="switchLayer('satellite', this)">🛰️ Satellite</button>
+      </div>
+
+      <!-- Zoom Controls -->
+      <div class="map-zoom-controls">
+        <button class="zoom-btn" onclick="alert('Zoom In - Feature for production')">+</button>
+        <button class="zoom-btn" onclick="alert('Zoom Out - Feature for production')">−</button>
+      </div>
+
+      <!-- Legend -->
+      <div class="map-legend">
+        <div class="legend-title">Status Legend</div>
+        <div class="legend-item">
+          <div class="legend-marker marker-icon-on"></div>
+          <span>Operational (ON)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-marker marker-icon-off"></div>
+          <span>Scheduled (OFF)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-marker marker-icon-fault"></div>
+          <span>Fault / No Signal</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
-(function(){
-  'use strict';
-  const canvas = document.getElementById('mainCanvas');
-  const ctx = canvas.getContext('2d');
-  const mainArea = document.getElementById('mainArea');
+  // ============ CONFIGURATION ============
+  const POLES_COUNT = 10;
+  const GATEWAY_INDEX = 4;
+  const DISTANT_POLES = [0, 9];
+  const RELAY_TARGETS = [1, 8];
+  const SUNRISE = 6, SUNSET = 18, LDR_DARK_THRESHOLD = 40, MAX_FAULTS = 2;
 
-  const terminalBody = document.getElementById('terminalBody');
-  const fpsCounter = document.getElementById('fpsCounter');
-  const metricHops = document.getElementById('metricHops');
-  const metricDuty = document.getElementById('metricDuty');
-  const metricLatency = document.getElementById('metricLatency');
-  const metricActive = document.getElementById('metricActive');
-  const dutyFill = document.getElementById('dutyFill');
-  const translationCount = document.getElementById('translationCount');
-  const m1Label = document.getElementById('m1Label');
-  const m2Label = document.getElementById('m2Label');
-  const zoneLabel = document.getElementById('zoneLabel');
-  const instructions = document.getElementById('instructions');
-  const headerSubtitle = document.getElementById('headerSubtitle');
-  const statusText = document.getElementById('statusText');
-  const terminalTitle = document.getElementById('terminalTitle');
-  const infoCard1Title = document.getElementById('infoCard1Title');
-  const infoTopology = document.getElementById('infoTopology');
-  const infoRouting = document.getElementById('infoRouting');
-  const infoThroughput = document.getElementById('infoThroughput');
-  const gatewayMode = document.getElementById('gatewayMode');
-  const tooltip = document.getElementById('tooltip');
-  const tooltipName = document.getElementById('tooltipName');
-  const tooltipDetail = document.getElementById('tooltipDetail');
-
-  const detailPanel = document.getElementById('detailPanel');
-  const detailIcon = document.getElementById('detailIcon');
-  const detailTitle = document.getElementById('detailTitle');
-  const detailSubtitle = document.getElementById('detailSubtitle');
-  const detailBody = document.getElementById('detailBody');
-  const detailJson = document.getElementById('detailJson');
-  const detailJsonLabel = document.getElementById('detailJsonLabel');
-  const detailCloseBtn = document.getElementById('detailCloseBtn');
-
-  let W=0,H=0,dpr=1;
-  let currentMode='coastal';
-  let nodes=[]; // active nodes
-  let hubNode=null;
-  let packets=[];
-  let totalHops=0;
-  let dutyCycle=0;
-  let systemLatency=14;
-  let translations=0;
-  let hoveredNode=null;
-  let activeNodesCount=0;
-  let frameCount=0,lastFpsTime=performance.now(),currentFps=60,lastTime=0;
-  let adjacency = new Map(); // id -> Set of Node
-
-  const MAX_LOG = 90;
-
-  class Node {
-    constructor(id,x,y,type,index){
-      this.id=id; this.nx=x; this.ny=y;
-      this.x=0; this.y=0; this.type=type; this.index=index;
-      this.radius = type==='hub'?30:13;
-      this.brightness=0.18; this.targetBrightness=0.18;
-      // ONLY hub has battery / SoC - street lights are mains-powered
-      this.soc = type==='hub' ? 92+Math.floor(Math.random()*8) : null;
-      this.lux=20+Math.floor(Math.random()*25);
-      this.pulsePhase=Math.random()*Math.PI*2;
-      this.active=false;
-      this.failed=false;
-      this.power=8+Math.random()*4;
-    }
-    updatePosition(){ this.x=this.nx*W; this.y=this.ny*H; }
-    update(dt){
-      const speed=4.2;
-      if(this.brightness < this.targetBrightness) this.brightness=Math.min(this.targetBrightness,this.brightness+speed*dt);
-      else if(this.brightness > this.targetBrightness) this.brightness=Math.max(this.targetBrightness,this.brightness-speed*0.55*dt);
-      if(this.targetBrightness>0.18) this.targetBrightness=Math.max(0.18,this.targetBrightness-0.16*dt);
-      this.active=this.brightness>0.32 && !this.failed;
-      this.pulsePhase+=dt*1.6;
-      // rare random fault for street lights (no battery degradation)
-      if(this.type!=='hub' && Math.random()<0.0008){ this.failed = Math.random()<0.04 ? true : false; }
-    }
-    draw(ctx,time){
-      const pulse=0.03*Math.sin(this.pulsePhase);
-      const b=this.brightness+pulse + (this.failed? -0.15:0);
-      if(b>0.22 && !this.failed){
-        const glowR=this.radius*(2.4+b*2.2);
-        let glowColor;
-        if(this.type==='coastal') glowColor=`rgba(0,229,255,${b*0.26})`;
-        else if(this.type==='urban') glowColor=`rgba(180,74,255,${b*0.26})`;
-        else glowColor=`rgba(255,171,0,${b*0.32})`;
-        const grad=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,glowR);
-        grad.addColorStop(0,glowColor); grad.addColorStop(1,'transparent');
-        ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(this.x,this.y,glowR,0,Math.PI*2); ctx.fill();
+  // Ward Data with realistic coordinates
+  const WARD_DATA = {
+    name: "Nagercoil - Ward 6",
+    roads: [
+      { 
+        id: "CR", 
+        name: "Court Road", 
+        lights: 15, 
+        x1: 15, y1: 25, x2: 85, y2: 25, 
+        width: 10 
+      },
+      { 
+        id: "DSR", 
+        name: "Duthie School Road", 
+        lights: 15, 
+        x1: 30, y1: 10, x2: 30, y2: 90, 
+        width: 8,
+        vertical: true 
+      },
+      { 
+        id: "VMR", 
+        name: "Vadasery Main Road", 
+        lights: 15, 
+        x1: 15, y1: 55, x2: 85, y2: 55, 
+        width: 12 
+      },
+      { 
+        id: "KJR", 
+        name: "Kottar Junction Road", 
+        lights: 15, 
+        x1: 70, y1: 10, x2: 70, y2: 90, 
+        width: 8,
+        vertical: true 
+      },
+      { 
+        id: "OS", 
+        name: "Ozhuginasery Street", 
+        lights: 15, 
+        x1: 15, y1: 80, x2: 85, y2: 80, 
+        width: 8 
       }
-      if(this.type==='hub') this.drawHub(ctx,b);
-      else this.drawStreetLight(ctx,b);
-      ctx.fillStyle=`rgba(232,234,237,${0.55+b*0.45})`;
-      ctx.font='10px "Courier New",monospace'; ctx.textAlign='center';
-      ctx.fillText(this.id,this.x,this.y+this.radius+14);
-      if(this.failed){
-        ctx.strokeStyle='rgba(255,23,68,0.8)'; ctx.lineWidth=1.5;
-        ctx.beginPath(); ctx.moveTo(this.x-7,this.y-7); ctx.lineTo(this.x+7,this.y+7);
-        ctx.moveTo(this.x+7,this.y-7); ctx.lineTo(this.x-7,this.y+7); ctx.stroke();
-      }
-    }
-    drawStreetLight(ctx,b){
-      const r=this.radius;
-      let base,bright;
-      if(this.type==='coastal'){ base=`rgba(0,229,255,${0.22+b*0.8})`; bright=`rgba(0,229,255,${0.55+b*0.45})`; }
-      else { base=`rgba(180,74,255,${0.22+b*0.8})`; bright=`rgba(180,74,255,${0.55+b*0.45})`; }
-      if(this.failed){ base='rgba(255,255,255,0.08)'; bright='rgba(255,255,255,0.15)'; }
-      ctx.strokeStyle=`rgba(255,255,255,${0.08+b*0.12})`; ctx.lineWidth=1.8;
-      ctx.beginPath(); ctx.moveTo(this.x,this.y+r*0.35); ctx.lineTo(this.x,this.y+r*1.35); ctx.stroke();
-      ctx.fillStyle=base; ctx.strokeStyle=bright; ctx.lineWidth=1.4;
-      ctx.beginPath(); ctx.arc(this.x,this.y,r*0.72,0,Math.PI*2); ctx.fill(); ctx.stroke();
-      if(b>0.32 && !this.failed){
-        ctx.fillStyle=`rgba(255,255,255,${(b-0.25)*1.2})`;
-        ctx.beginPath(); ctx.arc(this.x,this.y,r*0.28,0,Math.PI*2); ctx.fill();
-      }
-      // REMOVED SoC bar — only hub has battery now
-    }
-    drawHub(ctx,b){
-      const r=this.radius; ctx.save(); ctx.translate(this.x,this.y);
-      ctx.strokeStyle=`rgba(255,171,0,${0.18+b*0.5})`; ctx.lineWidth=2; this.hexPath(ctx,r*1.32); ctx.stroke();
-      ctx.fillStyle=`rgba(255,171,0,${0.08+b*0.16})`; this.hexPath(ctx,r); ctx.fill();
-      ctx.strokeStyle=`rgba(255,171,0,${0.42+b*0.58})`; ctx.lineWidth=1.6; this.hexPath(ctx,r); ctx.stroke();
+    ]
+  };
 
-      // antenna depending on mode
-      ctx.strokeStyle=`rgba(255,171,0,${0.6+b*0.4})`; ctx.lineWidth=2;
-      if(currentMode==='urban'){
-        // LoRa gateway + WiFi coexistence icon
-        ctx.beginPath();
-        ctx.moveTo(-8,6); ctx.lineTo(-8,-5); ctx.lineTo(-13,-12);
-        ctx.moveTo(-8,-5); ctx.lineTo(-3,-12);
-        ctx.moveTo(8,6); ctx.lineTo(8,-5); ctx.lineTo(3,-12);
-        ctx.moveTo(8,-5); ctx.lineTo(13,-12);
-        ctx.stroke();
-        // gateway box
-        ctx.beginPath(); ctx.moveTo(-10,6); ctx.lineTo(10,6); ctx.lineTo(6,13); ctx.lineTo(-6,13); ctx.closePath();
-        ctx.fillStyle=`rgba(180,74,255,${0.22+b*0.3})`; ctx.fill();
-        ctx.strokeStyle=`rgba(180,74,255,${0.5+b*0.35})`; ctx.lineWidth=1.2; ctx.stroke();
-        // small LoRa label dot
-        ctx.fillStyle=`rgba(180,74,255,0.9)`; ctx.beginPath(); ctx.arc(0,-2,2.2,0,Math.PI*2); ctx.fill();
+  // ============ STATE ============
+  let simTime = 18, isAutoSimulating = true, isRaining = false, ldrValue = 25;
+  let poleStates = Array(POLES_COUNT).fill(true);
+  let faultPole = -1;
+  let dashboardLights = [], faultIndices = new Set();
+  let autoSimInterval;
+  let sidebarCollapsed = false;
+
+  // SVG Pole
+  const poleSVG = `<svg viewBox="0 0 60 110" style="width:100%; height:100%; overflow:visible;"><defs><linearGradient id="metal" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#94a3b8"/><stop offset="50%" stop-color="#cbd5e1"/><stop offset="100%" stop-color="#64748b"/></linearGradient></defs><rect x="26" y="105" width="8" height="5" fill="#475569" rx="1"/><rect x="28" y="25" width="4" height="80" fill="url(#metal)"/><path d="M 32 25 C 32 10, 45 10, 45 10 L 15 10" fill="none" stroke="url(#metal)" stroke-width="4" stroke-linecap="round"/><rect x="8" y="8" width="16" height="4" fill="#334155" rx="1"/><line x1="30" y1="10" x2="30" y2="2" stroke="#475569" stroke-width="1.5"/><circle cx="30" cy="2" r="1.5" fill="#ef4444"/></svg>`;
+
+  function init() {
+    createPoles();
+    createMapData();
+    renderMap();
+    renderSidebar();
+    updateTimeDisplay();
+    updatePoles();
+    startAutoSimulation();
+    setInterval(triggerRandomHeartbeat, 8000);
+    setTimeout(drawCommLines, 500);
+  }
+
+  // ============ ARCHITECTURE POLES ============
+  function createPoles() {
+    const container = document.getElementById('polesContainer');
+    container.innerHTML = '';
+    for (let i = 0; i < POLES_COUNT; i++) {
+      const isGateway = i === GATEWAY_INDEX;
+      const isDistant = DISTANT_POLES.includes(i);
+      const poleEl = document.createElement('div');
+      poleEl.className = 'pole-unit on';
+      poleEl.id = `pole-${i}`;
+      poleEl.onclick = () => togglePole(i);
+      poleEl.innerHTML = `<div class="pole-label">NODE ${i + 1}</div>${isGateway ? '<div class="gateway-badge">GATEWAY</div>' : ''}<div class="sensor-icons"><div class="sensor-icon">🔆</div><div class="sensor-icon">⏱️</div>${isDistant ? '<div class="sensor-icon" style="background:#f3e8ff; border-color:#d8b4fe;">🔗</div>' : ''}</div><div class="pole-svg-container">${poleSVG}<div class="light-glow"></div><div class="light-flare"></div></div><div class="esp-chip">ESP32 + LoRa</div>`;
+      container.appendChild(poleEl);
+    }
+  }
+
+  function drawCommLines() {
+    const svg = document.getElementById('commSvg');
+    const container = document.getElementById('roadContainer');
+    if(!svg || !container) return;
+    const rect = container.getBoundingClientRect();
+    svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+    let paths = '<defs><marker id="aB" markerWidth="6" markerHeight="4" refX="6" refY="2" orient="auto"><polygon points="0 0, 6 2, 0 4" fill="#3b82f6"/></marker><marker id="aP" markerWidth="6" markerHeight="4" refX="6" refY="2" orient="auto"><polygon points="0 0, 6 2, 0 4" fill="#8b5cf6"/></marker></defs>';
+    const getCenter = (id) => {
+      const el = document.getElementById(id);
+      if(!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: r.left - rect.left + r.width/2, y: r.top - rect.top + r.height/2 + 20 };
+    };
+    const gw = getCenter(`pole-${GATEWAY_INDEX}`);
+    if(!gw) return;
+    for (let i = 0; i < POLES_COUNT; i++) {
+      if (i === GATEWAY_INDEX) continue;
+      const p = getCenter(`pole-${i}`);
+      if(!p) continue;
+      if (DISTANT_POLES.includes(i)) {
+        const target = getCenter(`pole-${RELAY_TARGETS[DISTANT_POLES.indexOf(i)]}`);
+        if(target) paths += `<line class="lora-line peer" x1="${p.x}" y1="${p.y}" x2="${target.x}" y2="${target.y}" marker-end="url(#aP)"/>`;
       } else {
-        ctx.beginPath();
-        ctx.moveTo(-6,4); ctx.lineTo(-6,-4); ctx.lineTo(-10,-10);
-        ctx.moveTo(-6,-4); ctx.lineTo(-2,-10);
-        ctx.moveTo(6,4); ctx.lineTo(6,-4); ctx.lineTo(2,-10);
-        ctx.moveTo(6,-4); ctx.lineTo(10,-10);
-        ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-8,4); ctx.lineTo(8,4); ctx.lineTo(4,10); ctx.lineTo(-4,10); ctx.closePath();
-        ctx.fillStyle=`rgba(255,171,0,${0.3+b*0.5})`; ctx.fill();
-      }
-      ctx.restore();
-      // pulse ring for hub
-      if(b>0.3){
-        ctx.strokeStyle=`rgba(255,171,0,${(b-0.2)*0.35})`; ctx.lineWidth=1;
-        ctx.beginPath(); ctx.arc(this.x,this.y,r*1.55 + Math.sin(Date.now()*0.004)*2,0,Math.PI*2); ctx.stroke();
+        paths += `<line class="lora-line" x1="${p.x}" y1="${p.y}" x2="${gw.x}" y2="${gw.y}" marker-end="url(#aB)"/>`;
       }
     }
-    hexPath(ctx,r){ ctx.beginPath(); for(let i=0;i<6;i++){ const a=Math.PI/3*i-Math.PI/6; const px=Math.cos(a)*r, py=Math.sin(a)*r; if(i===0)ctx.moveTo(px,py); else ctx.lineTo(px,py);} ctx.closePath(); }
-    containsPoint(px,py){ const dx=px-this.x, dy=py-this.y; const hr=this.type==='hub'? this.radius*1.55 : this.radius+9; return dx*dx+dy*dy <= hr*hr; }
+    svg.innerHTML = paths;
   }
 
-  class Packet {
-    constructor(from,to,type,duration,onArrive){
-      this.from=from; this.to=to; this.type=type; this.duration=duration; this.elapsed=0; this.onArrive=onArrive; this.alive=true; this.trail=[];
-    }
-    update(dt){
-      this.elapsed+=dt; const t=Math.min(1,this.elapsed/this.duration);
-      const eased = t<0.5? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
-      this.x=this.from.x+(this.to.x-this.from.x)*eased;
-      this.y=this.from.y+(this.to.y-this.from.y)*eased;
-      this.trail.push({x:this.x,y:this.y}); if(this.trail.length>14) this.trail.shift();
-      if(t>=1){ this.alive=false; if(this.onArrive) this.onArrive(); }
-    }
-    draw(ctx){
-      const color=this.type==='wifi'? [0,229,255] : [180,74,255];
-      for(let i=0;i<this.trail.length;i++){
-        const p=this.trail[i]; const alpha=(i/this.trail.length)*0.55; const r=1.5+(i/this.trail.length)*2.2;
-        ctx.fillStyle=`rgba(${color[0]},${color[1]},${color[2]},${alpha})`; ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+  // ============ LOGIC ============
+  function getTimeString(t) {
+    let h = Math.floor(t), m = Math.floor((t - h) * 60);
+    return `${String(h%12||12).padStart(2,'0')}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+  }
+
+  function getLdrForTime(t) {
+    if(isRaining) return (t>=7 && t<17) ? 25+Math.random()*5 : 10+Math.random()*5;
+    if(t>=7 && t<17) return Math.min(95, 60+(5-Math.abs(t-12))*7);
+    if(t>=17 && t<19) return 50-(t-17)*20;
+    if(t>=5 && t<7) return 15+(t-5)*18;
+    return 5+Math.random()*5;
+  }
+
+  function updateTimeDisplay() {
+    const ts = getTimeString(simTime);
+    document.getElementById('timeDisplay').textContent = ts;
+    document.getElementById('simTime').textContent = ts;
+    document.getElementById('timeSlider').value = simTime;
+    const sky = document.getElementById('skyIndicator');
+    if(simTime>=6 && simTime<7) sky.style.background = 'linear-gradient(90deg, #1e293b, #ea580c, #3b82f6)';
+    else if(simTime>=17 && simTime<19) sky.style.background = 'linear-gradient(90deg, #3b82f6, #ea580c, #1e293b)';
+    else if(simTime>=7 && simTime<17) sky.style.background = isRaining ? '#64748b' : '#3b82f6';
+    else sky.style.background = '#0f172a';
+  }
+
+  function updatePoles() {
+    ldrValue = getLdrForTime(simTime);
+    document.getElementById('ldrValue').textContent = Math.round(ldrValue) + '%';
+    document.getElementById('ldrBar').style.width = ldrValue + '%';
+    const clkOn = simTime>=SUNSET || simTime<SUNRISE;
+    document.getElementById('clockRule').className = 'status-val ' + (clkOn?'on':'off');
+    document.getElementById('clockRule').textContent = clkOn?'ON (6PM-6AM)':'OFF (6AM-6PM)';
+    document.getElementById('clockDecision').className = 'status-val ' + (clkOn?'on':'off');
+    document.getElementById('clockDecision').textContent = clkOn?'TURN ON':'TURN OFF';
+    const ldrDark = ldrValue < LDR_DARK_THRESHOLD;
+    let targetOn = clkOn, override = false;
+    if(!clkOn && ldrDark) { targetOn = true; override = true; }
+    if(clkOn && !ldrDark) { targetOn = false; override = true; }
+    const overEl = document.getElementById('ldrOverride');
+    if(override) { overEl.textContent='ACTIVE ⚡'; overEl.className='status-val override'; }
+    else { overEl.textContent='INACTIVE'; overEl.className='status-val'; overEl.style.background='#f1f5f9'; overEl.style.color='#64748b'; }
+    for(let i=0; i<POLES_COUNT; i++) {
+      const el = document.getElementById(`pole-${i}`);
+      if(i === faultPole) {
+        if(poleStates[i]!==false) poleStates[i]=false;
+        if(el) el.className = 'pole-unit fault';
+        continue;
       }
-      ctx.fillStyle=`rgba(${color[0]},${color[1]},${color[2]},1)`; ctx.shadowColor=`rgba(${color[0]},${color[1]},${color[2]},0.85)`; ctx.shadowBlur=14;
-      ctx.beginPath(); ctx.arc(this.x,this.y,4.6,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
-      ctx.fillStyle=`rgba(${color[0]},${color[1]},${color[2]},0.75)`; ctx.font='8px "Courier New",monospace'; ctx.textAlign='center';
-      ctx.fillText(this.type==='wifi'?'PKT':'LoRa',this.x,this.y-11);
-    }
-  }
-
-  function initCoastalNodes(){
-    nodes=[];
-    adjacency=new Map();
-    // FULL-WIDTH coastal S-curve to fill right side empty area
-    // Change baseX multiplier to control how far right it goes, wave amplitude to control S-shape
-    for(let i=0;i<20;i++){
-      const t=i/19;
-      // baseX: start + t*range -> 0.05 + t*0.78 goes from left 5% to right 83% of screen
-      const baseX=0.05 + t*0.78;
-      // wave: sin amplitude = lateral S swing, cos adds secondary kink. Increase 0.16 -> 0.25 for wider S
-      const wave=Math.sin(t*Math.PI*1.6)*0.16 + Math.cos(t*Math.PI*2.8)*0.07;
-      const jitterX=(Math.random()-0.5)*0.08;
-      const jitterY=(Math.random()-0.5)*0.07;
-      const nx=baseX+wave+jitterX;
-      const ny=0.05 + t*0.88 + jitterY;
-      const node=new Node(`C-${String(i+1).padStart(2,'0')}`, Math.min(0.92,Math.max(0.04,nx)), Math.min(0.94,Math.max(0.04,ny)), 'coastal', i);
-      nodes.push(node);
-    }
-    hubNode=new Node('HUB-COAST',0.5,0.48,'hub',0); hubNode.soc=96; hubNode.brightness=0.38; hubNode.targetBrightness=0.38;
-    // Build adjacency for mesh
-    // init sets
-    for(const n of nodes) adjacency.set(n.id,new Set());
-    adjacency.set(hubNode.id,new Set());
-
-    // chain
-    for(let i=0;i<nodes.length-1;i++){
-      adjacency.get(nodes[i].id).add(nodes[i+1]);
-      adjacency.get(nodes[i+1].id).add(nodes[i]);
-    }
-    // skip-one connections
-    for(let i=0;i<nodes.length-2;i++){
-      adjacency.get(nodes[i].id).add(nodes[i+2]);
-      adjacency.get(nodes[i+2].id).add(nodes[i]);
-    }
-    // nearest 2 extra for each (distance based)
-    for(let i=0;i<nodes.length;i++){
-      const a=nodes[i];
-      const dists=nodes.map(b=>({b, d: (a.nx-b.nx)**2 + (a.ny-b.ny)**2 })).filter(o=>o.b!==a).sort((x,y)=>x.d-y.d);
-      for(let k=0;k<2;k++){
-        const b=dists[k].b;
-        if(dists[k].d < 0.14) { // threshold increased for full-width spread (was 0.07 -> 0.10 -> 0.14)
-          adjacency.get(a.id).add(b);
-          adjacency.get(b.id).add(a);
-        }
+      if(poleStates[i] !== targetOn) {
+        poleStates[i] = targetOn;
+        addLog(targetOn?'event-on':'event-off', `NODE ${i+1}: ${targetOn?'ON':'OFF'} ${override?'(LDR)':'(Clock)'}`);
       }
+      if(el) el.className = `pole-unit ${targetOn?'on':'off'}`;
     }
-    // connect 3 closest to hub to hub
-    const closeToHub=[...nodes].sort((a,b)=> ( (a.nx-0.5)**2+(a.ny-0.48)**2) - ((b.nx-0.5)**2+(b.ny-0.48)**2) ).slice(0,4);
-    for(const n of closeToHub){
-      adjacency.get(n.id).add(hubNode);
-      adjacency.get(hubNode.id).add(n);
-    }
+    updateMapMarkers(targetOn);
   }
 
-  function initUrbanNodes(){
-    nodes=[];
-    adjacency=new Map();
-    // Generate 30 urban nodes scattered
-    for(let i=0;i<30;i++){
-      // distribute using polar with varying radius to avoid clump
-      const angle=(i/30)*Math.PI*2*2.3 + Math.random()*0.8;
-      const baseR=0.13 + (i%5)*0.07 + Math.random()*0.14;
-      const r=baseR + (Math.random()-0.5)*0.05;
-      let nx=0.5 + Math.cos(angle)*r*1.35;
-      let ny=0.5 + Math.sin(angle)*r*0.95;
-      // keep inside bounds and not too close to hub (<0.12)
-      let tries=0;
-      while(Math.hypot(nx-0.5,ny-0.48)<0.12 && tries<10){
-        nx=0.15+Math.random()*0.7;
-        ny=0.12+Math.random()*0.7;
-        tries++;
+  // ============ MAP DATA ============
+  function createMapData() {
+    dashboardLights = [];
+    let globalIdx = 0;
+    while(faultIndices.size < MAX_FAULTS) faultIndices.add(Math.floor(Math.random() * 75));
+    WARD_DATA.roads.forEach(road => {
+      for(let i=0; i<road.lights; i++) {
+        const isFault = faultIndices.has(globalIdx);
+        const t = i / (road.lights - 1);
+        const x = road.x1 + (road.x2 - road.x1) * t;
+        const y = road.y1 + (road.y2 - road.y1) * t;
+        dashboardLights.push({
+          id: `${road.id}-${i+1}`,
+          roadId: road.id,
+          roadName: road.name,
+          status: isFault ? 'fault' : 'on',
+          isFault: isFault,
+          x: x, y: y
+        });
+        globalIdx++;
       }
-      nx=Math.min(0.92,Math.max(0.08,nx));
-      ny=Math.min(0.90,Math.max(0.08,ny));
-      const node=new Node(`U-${String(i+1).padStart(2,'0')}`,nx,ny,'urban',i);
-      nodes.push(node);
-    }
-    hubNode=new Node('HUB-URBAN',0.5,0.50,'hub',0); hubNode.soc=92; hubNode.brightness=0.40; hubNode.targetBrightness=0.40;
-    for(const n of nodes) adjacency.set(n.id,new Set([hubNode]));
-    adjacency.set(hubNode.id,new Set(nodes));
-  }
-
-  function resize(){
-    const rect=mainArea.getBoundingClientRect();
-    dpr=window.devicePixelRatio||1;
-    W=rect.width; H=rect.height;
-    canvas.width=W*dpr; canvas.height=H*dpr;
-    canvas.style.width=W+'px'; canvas.style.height=H+'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    for(const n of nodes) n.updatePosition();
-    if(hubNode) hubNode.updatePosition();
-  }
-
-  function drawBackground(time){
-    ctx.strokeStyle='rgba(255,255,255,0.022)'; ctx.lineWidth=1;
-    const gs=42;
-    for(let x=0;x<W;x+=gs){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-    for(let y=0;y<H;y+=gs){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-    ctx.setLineDash([5,10]); ctx.strokeStyle='rgba(255,255,255,0.045)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(W*0.48,0); ctx.lineTo(W*0.48,H); ctx.stroke(); ctx.setLineDash([]);
-  }
-
-  function drawMeshConnections(time){
-    // draw all adjacency edges (avoid double)
-    const drawn=new Set();
-    ctx.lineWidth=1.3;
-    for(const [id,set] of adjacency){
-      const from = id===hubNode.id? hubNode : nodes.find(n=>n.id===id);
-      if(!from) continue;
-      for(const to of set){
-        const key=[from.id,to.id].sort().join('|');
-        if(drawn.has(key)) continue;
-        drawn.add(key);
-        const avgB=( (from.brightness||0)+(to.brightness||0))/2;
-        if(to.id.includes('HUB')){
-          ctx.strokeStyle=`rgba(0,229,255,${0.07+avgB*0.18})`;
-          ctx.setLineDash([3,10]); ctx.lineDashOffset=-(time*18)%13;
-        } else {
-          ctx.strokeStyle=`rgba(0,229,255,${0.10+avgB*0.38})`;
-          ctx.setLineDash([6,8]); ctx.lineDashOffset=-(time*28)%14;
-        }
-        ctx.beginPath(); ctx.moveTo(from.x,from.y); ctx.lineTo(to.x,to.y); ctx.stroke();
-      }
-    }
-    ctx.setLineDash([]);
-  }
-
-  function drawStarConnections(time){
-    for(const node of nodes){
-      const b=node.brightness;
-      ctx.strokeStyle=`rgba(180,74,255,${0.06+b*0.28})`;
-      ctx.lineWidth=1;
-      ctx.setLineDash([3,11]); ctx.lineDashOffset=-(time*14)%14;
-      ctx.beginPath(); ctx.moveTo(node.x,node.y); ctx.lineTo(hubNode.x,hubNode.y); ctx.stroke();
-    }
-    ctx.setLineDash([]);
-    // gateway halo
-    ctx.strokeStyle='rgba(180,74,255,0.12)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.arc(hubNode.x,hubNode.y, Math.min(W,H)*0.32,0,Math.PI*2); ctx.stroke();
-  }
-
-  function logTerminal(type,msg){
-    const now=new Date();
-    const ts=now.toTimeString().split(' ')[0]+'.'+String(now.getMilliseconds()).padStart(3,'0');
-    let prefix='',cls='';
-    switch(type){
-      case 'wifi': prefix='[Wi-Fi Mesh]'; cls='log-wifi'; break;
-      case 'lora': prefix='[LoRa Star]'; cls='log-lora'; break;
-      case 'hub': prefix='[Gateway]'; cls='log-hub'; break;
-      case 'system': prefix='[System]'; cls='log-system'; break;
-    }
-    const entry=document.createElement('div'); entry.className='log-entry';
-    let fmt=msg.replace(/(\{[^}]+\})/g,'<span class="log-json">$1</span>').replace(/(0x[A-Fa-f0-9]+)/g,'<span class="log-hex">$1</span>');
-    entry.innerHTML=`<span class="log-timestamp">${ts}</span> <span class="${cls}">${prefix}</span> ${fmt}`;
-    terminalBody.appendChild(entry);
-    while(terminalBody.children.length>MAX_LOG) terminalBody.removeChild(terminalBody.firstChild);
-    terminalBody.scrollTop=terminalBody.scrollHeight;
-  }
-
-  function generateNodePayload(node){
-    const ambient = Math.random()>0.45;
-    const pedestrian = Math.random()>0.55;
-    const brightness_percent = Math.min(100, Math.max(10, Math.round(node.targetBrightness*100 + (Math.random()*10-5))));
-    const basePower = 12; // W LED street light (mains, no battery)
-    const power_consumption = parseFloat((basePower * (brightness_percent/100) * 1.1 + (ambient?0:0.5) + Math.random()*0.8).toFixed(2));
-    // ONLY required fields + minimal meta — removed battery_soc (hub only)
-    return {
-      node_id: node.id,
-      Ambient_light_detected: ambient,
-      brightness_percent: brightness_percent,
-      power_consumption: power_consumption,
-      pedestrain_detected: pedestrian,
-      lux: node.lux, // optional ambient sensor
-      timestamp: new Date().toISOString(),
-      network_type: currentMode==='coastal'?'mesh':'LORA'
-    };
-  }
-
-  function showNodeDetail(node,payload,pathInfo){
-    detailPanel.classList.remove('hidden');
-    detailIcon.textContent=node.id.split('-')[0];
-    detailIcon.className='detail-icon '+(currentMode==='coastal'?'coastal':'urban');
-    detailTitle.textContent=`${node.id} — ${currentMode==='coastal'?'Coastal Light':'Urban Light'}`;
-    detailSubtitle.textContent = currentMode==='coastal'? 'Wi-Fi Mesh Node • Multi-Hop to Hub' : 'LoRa Node • Direct via Gateway';
-    detailJsonLabel.textContent = currentMode==='coastal'? 'Live Payload — Node → Mesh → Hub' : 'Live Payload — Node → LoRa Gateway → Hub';
-
-    // body details - removed Battery SOC row (only hub has battery)
-    const working = nodes.filter(n=>!n.failed).length;
-    detailBody.innerHTML=`
-      <div class="detail-row"><span class="detail-label">Node ID</span><span class="detail-value">${node.id}</span></div>
-      <div class="detail-row"><span class="detail-label">Status</span><span class="badge ${node.failed?'amber': currentMode==='coastal'?'cyan':'purple'}">${node.failed?'FAULT':'ONLINE'}</span></div>
-      <div class="detail-row"><span class="detail-label">Brightness</span><span class="detail-value">${payload.brightness_percent}%</span></div>
-      <div class="detail-row"><span class="detail-label">Power Draw</span><span class="detail-value">${payload.power_consumption} W</span></div>
-      <div class="detail-row"><span class="detail-label">Pedestrian</span><span class="detail-value" style="color:${payload.pedestrain_detected?'var(--amber)':'var(--text-secondary)'}">${payload.pedestrain_detected?'Detected':'None'}</span></div>
-      <div class="detail-row"><span class="detail-label">Ambient Light</span><span class="detail-value">${payload.Ambient_light_detected?'Bright':'Dark'}</span></div>
-      <div class="detail-divider"></div>
-      <div class="detail-row"><span class="detail-label">Network</span><span class="detail-value">${currentMode==='coastal'?'MESH (ESP-NOW)':'LoRaWAN Star'}</span></div>
-      <div class="detail-row"><span class="detail-label">Hop Path</span><span class="detail-value">${pathInfo||'Direct to Hub'}</span></div>
-      <div class="detail-row"><span class="detail-label">Nodes Working</span><span class="detail-value">${working}/${nodes.length}</span></div>
-      <div class="detail-row"><span class="detail-label">Power Source</span><span class="detail-value">Mains (No Battery)</span></div>
-    `;
-
-    detailJson.textContent=JSON.stringify(payload,null,2);
-  }
-
-  function showHubDetail(){
-    detailPanel.classList.remove('hidden');
-    detailIcon.textContent='HUB';
-    detailIcon.className='detail-icon hub';
-    detailTitle.textContent=`${hubNode.id} — Central Gateway`;
-    detailSubtitle.textContent = currentMode==='coastal'? 'Mesh Hub • Aggregating 20 Coastal Lights' : 'LoRa Gateway • Aggregating 30 Urban Lights';
-    detailJsonLabel.textContent = 'Hub Status Snapshot';
-
-    const working = nodes.filter(n=>!n.failed).length;
-    const battery_percentage = hubNode.soc;
-    const network_type = currentMode==='coastal' ? 'mesh' : 'LORA';
-
-    const hubPayload = {
-      hub_id: hubNode.id,
-      battery_percentage: battery_percentage,
-      nodes_working: `${working}/${nodes.length}`,
-      network_type: network_type,
-      gateway: currentMode==='coastal' ? 'Wi-Fi Mesh Aggregator' : 'LoRaWAN Gateway (868MHz) + ESP32-S3',
-      translations: translations,
-      uptime: `${Math.floor(performance.now()/1000)}s`,
-      active_nodes: nodes.filter(n=>n.active).length,
-      timestamp: new Date().toISOString()
-    };
-
-    detailBody.innerHTML=`
-      <div class="detail-row"><span class="detail-label">Hub ID</span><span class="detail-value">${hubNode.id}</span></div>
-      <div class="detail-row"><span class="detail-label">Battery</span><span class="detail-value" style="color:var(--green)">${battery_percentage}%</span></div>
-      <div class="detail-row" style="margin:6px 0"><span class="detail-label" style="width:100%">Battery Level</span></div>
-      <div class="duty-bar" style="height:8px"><div class="duty-fill" style="width:${battery_percentage}%; background:${battery_percentage>50?'var(--green)':battery_percentage>20?'var(--amber)':'var(--red)'}"></div></div>
-      <div class="detail-divider"></div>
-      <div class="detail-row"><span class="detail-label">Network Type</span><span class="badge ${network_type==='mesh'?'cyan':'purple'}">${network_type}</span></div>
-      <div class="detail-row"><span class="detail-label">Nodes Working</span><span class="detail-value" style="color:var(--green)">${working} / ${nodes.length}</span></div>
-      <div class="detail-row"><span class="detail-label">Gateway Mode</span><span class="detail-value">${currentMode==='coastal'?'Mesh Hub':'LoRa Gateway'}</span></div>
-      <div class="detail-row"><span class="detail-label">Translations</span><span class="detail-value">${translations}</span></div>
-      <div class="detail-row"><span class="detail-label">Failures</span><span class="detail-value" style="color:${nodes.length-working>0?'var(--red)':'var(--text-secondary)'}">${nodes.length-working}</span></div>
-    `;
-    detailJson.textContent=JSON.stringify(hubPayload,null,2);
-  }
-
-  detailCloseBtn.addEventListener('click',()=> detailPanel.classList.add('hidden'));
-
-  // BFS pathfind
-  function findPath(startId,targetId){
-    // BFS over adjacency
-    const queue=[startId];
-    const visited=new Set([startId]);
-    const parent=new Map();
-    while(queue.length){
-      const cur=queue.shift();
-      if(cur===targetId){
-        // reconstruct
-        const path=[];
-        let cur2=targetId;
-        while(cur2){
-          const nodeObj = cur2===hubNode.id? hubNode : nodes.find(n=>n.id===cur2);
-          if(nodeObj) path.unshift(nodeObj);
-          cur2=parent.get(cur2);
-        }
-        return path;
-      }
-      const neighbors=adjacency.get(cur);
-      if(!neighbors) continue;
-      for(const nb of neighbors){
-        if(!visited.has(nb.id)){
-          visited.add(nb.id);
-          parent.set(nb.id,cur);
-          queue.push(nb.id);
-        }
-      }
-    }
-    return null;
-  }
-
-  function triggerCoastalNode(node){
-    const payload=generateNodePayload(node);
-    node.targetBrightness=1.0; node.brightness=0.9; node.lux=100;
-    const path=findPath(node.id,hubNode.id);
-    const pathStr=path? path.map(n=>n.id).join(' → ') : 'Direct';
-    showNodeDetail(node,payload,pathStr);
-
-    logTerminal('system',`Vehicle/Pedestrian event at ${node.id}! Initiating Mesh Swarm...`);
-    logTerminal('wifi',`${node.id} BROADCAST ${JSON.stringify({id:node.id,Ambient_light_detected:payload.Ambient_light_detected,brightness_percent:payload.brightness_percent,power_consumption:payload.power_consumption,pedestrain_detected:payload.pedestrain_detected})}`);
-
-    if(path && path.length>1){
-      for(let i=0;i<path.length-1;i++){
-        const from=path[i], to=path[i+1];
-        const delay=i*320;
-        setTimeout(()=>{
-          const pkt=new Packet(from,to,'wifi',0.38,()=>{
-            if(to.type!=='hub'){
-              to.targetBrightness=Math.max(0.72,1.0 - i*0.1);
-              to.lux=Math.round(100 - i*12);
-            } else {
-              hubNode.targetBrightness=0.85;
-              translations++; translationCount.textContent=translations;
-              systemLatency=15+Math.floor(Math.random()*18);
-              logTerminal('hub',`HUB received multi-hop from ${node.id} via ${path.length-1} hops. Payload ${JSON.stringify(payload)}`);
-            }
-            totalHops++; systemLatency=8+Math.floor(Math.random()*10);
-            logTerminal('wifi',`${from.id} → ${to.id} hop ${i+1}/${path.length-1} ${JSON.stringify({brightness_percent:to.targetBrightness?Math.round(to.targetBrightness*100):100})}`);
-          });
-          packets.push(pkt);
-        },delay);
-      }
-    } else {
-      logTerminal('system','No mesh path found — fallback direct transmission attempt.');
-      const pkt=new Packet(node,hubNode,'wifi',0.5,()=>{
-        translations++; translationCount.textContent=translations;
-        logTerminal('hub',`HUB received ${node.id} direct ${JSON.stringify(payload)}`);
-      });
-      packets.push(pkt);
-    }
-  }
-
-  function triggerUrbanNode(node){
-    const payload=generateNodePayload(node);
-    node.targetBrightness=1.0; node.brightness=0.92; node.lux=100;
-    showNodeDetail(node,payload,'Direct → LoRa Gateway → Hub');
-
-    logTerminal('system',`Pedestrian detected at ${node.id}! Edge processing locally...`);
-    logTerminal('system',`${node.id} preparing LoRa uplink via gateway at ${hubNode.id} (868MHz)`);
-    logTerminal('lora',`${node.id} → [LoRa GW @ ${hubNode.id}]  ${JSON.stringify(payload)}  (SF12, 0x${Math.floor(Math.random()*0xFFFF).toString(16).toUpperCase()})`);
-
-    setTimeout(()=>{
-      const pkt=new Packet(node,hubNode,'lora',1.2,()=>{
-        hubNode.targetBrightness=0.82;
-        dutyCycle=Math.min(1.0,dutyCycle+0.06);
-        translations++; translationCount.textContent=translations;
-        const rssi=-78-Math.floor(Math.random()*32);
-        logTerminal('hub',`LoRa Gateway unpacked ${payload.node_id}: RSSI ${rssi}dBm → ${JSON.stringify({Ambient_light_detected:payload.Ambient_light_detected,brightness_percent:payload.brightness_percent,power_consumption:payload.power_consumption,pedestrain_detected:payload.pedestrain_detected})}`);
-        systemLatency=1200+Math.floor(Math.random()*600);
-        setTimeout(()=>{ dutyCycle=Math.max(0,dutyCycle-0.04); },5000);
-      });
-      packets.push(pkt);
-    }, 800);
-  }
-
-  function switchMode(mode){
-    if(mode===currentMode) return;
-    currentMode=mode;
-    packets=[];
-    totalHops=0; dutyCycle=0; translations=0; translationCount.textContent='0';
-    detailPanel.classList.add('hidden');
-
-    // UI toggles
-    document.querySelectorAll('.mode-btn').forEach(btn=>{
-      btn.classList.toggle('active', btn.dataset.mode===mode);
     });
-
-    if(mode==='coastal'){
-      initCoastalNodes();
-      zoneLabel.textContent='🌊 Coastal Zone — Wi-Fi Mesh • 20 Lights';
-      zoneLabel.className='zone-label coastal';
-      instructions.textContent='Click any coastal light → data hops through mesh to hub • Click hub for battery & network status';
-      headerSubtitle.textContent='Coastal Mesh • 20 Nodes • Multi-Hop ESP-NOW';
-      statusText.textContent='COASTAL ONLINE';
-      m1Label.textContent='Mesh Hops'; m2Label.textContent='Mesh Load %';
-      terminalTitle.textContent='Network Inspector — Coastal Mesh Traffic (Multi-Hop)';
-      infoCard1Title.textContent='Wi-Fi Multi-Hop Mesh';
-      infoTopology.textContent='Mesh • 20 Nodes'; infoTopology.style.color='var(--cyan)';
-      infoRouting.textContent='Multi-Hop (BFS)'; infoRouting.style.color='var(--cyan)';
-      infoThroughput.textContent='~1 Mbps'; infoThroughput.style.color='var(--cyan)';
-      gatewayMode.textContent='Mesh Hub';
-      dutyFill.style.background='var(--cyan)';
-      logTerminal('system','Switched to COASTAL mode: 20 lights mesh network initialized.');
-      logTerminal('system','Topology: ESP-NOW 2.4GHz mesh, BFS routing, up to 4 hops to hub.');
-    } else {
-      initUrbanNodes();
-      zoneLabel.textContent='🏙️ Urban Zone — LoRa Star • 30 Lights + Gateway';
-      zoneLabel.className='zone-label urban';
-      instructions.textContent='Click any urban light → direct LoRa to gateway (no hops) • Click hub/gateway for battery & status';
-      headerSubtitle.textContent='Urban LoRa • 30 Nodes • Star + Gateway';
-      statusText.textContent='URBAN ONLINE';
-      m1Label.textContent='Packets'; m2Label.textContent='LoRa Duty %';
-      terminalTitle.textContent='Network Inspector — Urban LoRa Traffic (Direct via Gateway)';
-      infoCard1Title.textContent='LoRa Star Network';
-      infoTopology.textContent='Star • 30 Nodes + GW'; infoTopology.style.color='var(--purple)';
-      infoRouting.textContent='Direct via Gateway'; infoRouting.style.color='var(--purple)';
-      infoThroughput.textContent='~5.5 kbps'; infoThroughput.style.color='var(--purple)';
-      gatewayMode.textContent='LoRa Gateway';
-      dutyFill.style.background='var(--purple)';
-      logTerminal('system','Switched to URBAN mode: 30 lights LoRa star network initialized.');
-      logTerminal('system','Topology: LoRaWAN Sub-GHz star, each node direct to gateway at hub, no hopping.');
-    }
-    resize();
   }
 
-  // Mode switch handlers
-  document.getElementById('modeSwitch').addEventListener('click', (e)=>{
-    const btn=e.target.closest('.mode-btn');
-    if(!btn) return;
-    switchMode(btn.dataset.mode);
-  });
-
-  // Canvas interaction
-  function getCanvasPos(e){
-    const rect=canvas.getBoundingClientRect();
-    return { x:e.clientX-rect.left, y:e.clientY-rect.top };
-  }
-
-  canvas.addEventListener('click', (e)=>{
-    const pos=getCanvasPos(e);
-    if(hubNode && hubNode.containsPoint(pos.x,pos.y)){
-      showHubDetail();
-      hubNode.targetBrightness=0.9;
-      logTerminal('hub',`${hubNode.id} inspected → battery ${hubNode.soc}%, working ${nodes.filter(n=>!n.failed).length}/${nodes.length}, type ${currentMode==='coastal'?'mesh':'LORA'}`);
-      return;
-    }
-    for(const node of nodes){
-      if(node.containsPoint(pos.x,pos.y)){
-        if(node.failed){ logTerminal('system',`${node.id} is in FAULT state — maintenance required.`); showNodeDetail(node,generateNodePayload(node),'FAULT — No transmission'); return; }
-        if(currentMode==='coastal') triggerCoastalNode(node);
-        else triggerUrbanNode(node);
-        return;
+  function renderMap() {
+    const canvas = document.getElementById('gmapsCanvas');
+    canvas.innerHTML = '';
+    WARD_DATA.roads.forEach(road => {
+      const roadEl = document.createElement('div');
+      roadEl.className = 'gmap-road' + (road.vertical ? ' vertical' : '');
+      if(road.vertical) {
+        roadEl.style.left = road.x1 + '%';
+        roadEl.style.top = Math.min(road.y1, road.y2) + '%';
+        roadEl.style.width = road.width + 'px';
+        roadEl.style.height = Math.abs(road.y2 - road.y1) + '%';
+        roadEl.style.transform = 'translateX(-50%)';
+      } else {
+        roadEl.style.left = Math.min(road.x1, road.x2) + '%';
+        roadEl.style.top = road.y1 + '%';
+        roadEl.style.width = Math.abs(road.x2 - road.x1) + '%';
+        roadEl.style.height = road.width + 'px';
+        roadEl.style.transform = 'translateY(-50%)';
       }
-    }
-    // click empty — close detail?
-    // detailPanel.classList.add('hidden');
-  });
+      const label = document.createElement('div');
+      label.className = 'gmap-road-label';
+      label.textContent = road.name;
+      if(road.vertical) {
+        label.style.top = '50%';
+        label.style.left = '50%';
+        label.style.transform = 'translate(-50%, -50%) rotate(-90deg)';
+      } else {
+        label.style.top = '-20px';
+        label.style.left = '50%';
+        label.style.transform = 'translateX(-50%)';
+      }
+      roadEl.appendChild(label);
+      canvas.appendChild(roadEl);
+    });
+    dashboardLights.forEach(light => {
+      const marker = document.createElement('div');
+      marker.className = `gmap-marker`;
+      marker.id = `marker-${light.id}`;
+      marker.style.left = light.x + '%';
+      marker.style.top = light.y + '%';
+      marker.innerHTML = `<div class="marker-icon-${light.status}"></div><div class="gmap-info-card"><div class="info-card-title">${light.id}</div><div class="info-card-detail">${light.roadName}</div><div class="info-card-status ${light.status}">${light.status.toUpperCase()}</div></div>`;
+      canvas.appendChild(marker);
+    });
+  }
 
-  canvas.addEventListener('mousemove', (e)=>{
-    const pos=getCanvasPos(e);
-    hoveredNode=null; canvas.style.cursor='default';
-    const all=[...nodes,hubNode];
-    for(const node of all){
-      if(node && node.containsPoint(pos.x,pos.y)){
-        hoveredNode=node;
-        canvas.style.cursor='pointer';
-        tooltipName.textContent=node.id;
-        let det='';
-        if(node.type==='hub'){
-          det=`Type: ${currentMode==='coastal'?'Mesh Hub':'LoRa Gateway'}\nBattery: ${node.soc}% (Hub Only)\nNetwork: ${currentMode==='coastal'?'MESH':'LORA'}\nNodes Working: ${nodes.filter(n=>!n.failed).length}/${nodes.length}\nClick for full status`;
-        } else if(currentMode==='coastal'){
-          det=`Type: Coastal Mesh Node (Mains)\nLux: ${node.lux}\nPower: ${Math.round(node.brightness*100)}%\nHops to Hub: ~${findPath(node.id,hubNode.id)?.length-1||'?'} \nMulti-hop via mesh\nClick to send JSON payload`;
-        } else {
-          det=`Type: Urban LoRa Node (Mains)\nLux: ${node.lux}\nPower: ${Math.round(node.brightness*100)}%\nUplink: Direct → Gateway\nNo hops (LoRa star)\nClick to send JSON payload`;
+  function updateMapMarkers(targetOn) {
+    let onC = 0, offC = 0, fltC = 0;
+    dashboardLights.forEach(light => {
+      if(!light.isFault) light.status = targetOn ? 'on' : 'off';
+      if(light.status === 'on') onC++;
+      else if(light.status === 'off') offC++;
+      else fltC++;
+      const marker = document.getElementById(`marker-${light.id}`);
+      if(marker) {
+        const icon = marker.querySelector('[class^="marker-icon-"]');
+        if(icon) icon.className = `marker-icon-${light.status}`;
+        const statusEl = marker.querySelector('.info-card-status');
+        if(statusEl) {
+          statusEl.className = `info-card-status ${light.status}`;
+          statusEl.textContent = light.status.toUpperCase();
         }
-        tooltipDetail.textContent=det;
-        tooltip.style.left=(e.clientX+16)+'px';
-        tooltip.style.top=(e.clientY-10)+'px';
-        tooltip.classList.add('visible');
-        return;
       }
-    }
-    tooltip.classList.remove('visible');
-  });
-  canvas.addEventListener('mouseleave',()=>{ hoveredNode=null; tooltip.classList.remove('visible'); });
+    });
+    document.getElementById('sidebarTotal').textContent = dashboardLights.length;
+    document.getElementById('sidebarOn').textContent = onC;
+    document.getElementById('sidebarOff').textContent = offC;
+    document.getElementById('sidebarFault').textContent = fltC;
+    updateSidebarRoads();
+  }
 
-  function updateMetrics(){
-    if(currentMode==='coastal'){
-      metricHops.textContent=totalHops;
-      metricDuty.textContent=(dutyCycle*100).toFixed(1);
+  function renderSidebar() {
+    const cont = document.getElementById('sidebarRoads');
+    cont.innerHTML = '';
+    WARD_DATA.roads.forEach(road => {
+      const item = document.createElement('div');
+      item.className = 'sidebar-road-item';
+      item.innerHTML = `<div class="sidebar-road-name">🛣️ ${road.name}</div><div class="sidebar-road-stats" id="road-stat-${road.id}"></div>`;
+      cont.appendChild(item);
+    });
+    updateSidebarRoads();
+  }
+
+  function updateSidebarRoads() {
+    WARD_DATA.roads.forEach(road => {
+      const lights = dashboardLights.filter(l => l.roadId === road.id);
+      const on = lights.filter(l => l.status === 'on').length;
+      const off = lights.filter(l => l.status === 'off').length;
+      const fault = lights.filter(l => l.status === 'fault').length;
+      const el = document.getElementById(`road-stat-${road.id}`);
+      if(el) el.innerHTML = `<span style="color:#16a34a;">${on} ON</span> • <span style="color:#dc2626;">${off} OFF</span>${fault>0 ? ` • <span style="color:#f59e0b;">${fault} FAULT</span>` : ''}`;
+    });
+  }
+
+  function toggleSidebar() {
+    sidebarCollapsed = !sidebarCollapsed;
+    const sidebar = document.getElementById('gmapsSidebar');
+    const icon = document.getElementById('sidebarToggleIcon');
+    if(sidebarCollapsed) {
+      sidebar.classList.add('collapsed');
+      icon.textContent = '▶';
     } else {
-      metricHops.textContent=translations;
-      metricDuty.textContent=(dutyCycle*100).toFixed(1);
+      sidebar.classList.remove('collapsed');
+      icon.textContent = '◀';
     }
-    dutyFill.style.width=(dutyCycle*100)+'%';
-    if(systemLatency>=1000) metricLatency.textContent=(systemLatency/1000).toFixed(1)+' s';
-    else metricLatency.textContent=systemLatency+' ms';
-    const active=nodes.filter(n=>n.active).length + (hubNode?.active?1:0);
-    metricActive.textContent=`${active}/${nodes.length+1}`;
   }
 
-  function render(ts){
-    requestAnimationFrame(render);
-    if(!lastTime) lastTime=ts;
-    const dt=Math.min((ts-lastTime)/1000,0.05); lastTime=ts; const time=ts/1000;
-    frameCount++; if(ts-lastFpsTime>=1000){ currentFps=frameCount; frameCount=0; lastFpsTime=ts; fpsCounter.textContent=currentFps+' FPS'; }
-    ctx.clearRect(0,0,W,H);
-    drawBackground(time);
-    if(currentMode==='coastal') drawMeshConnections(time);
-    else drawStarConnections(time);
-    for(const n of nodes){ n.update(dt); n.draw(ctx,time); }
-    if(hubNode){ hubNode.update(dt); hubNode.draw(ctx,time); }
-    for(let i=packets.length-1;i>=0;i--){ packets[i].update(dt); packets[i].draw(ctx); if(!packets[i].alive) packets.splice(i,1); }
-    if(hoveredNode && hoveredNode.type!=='hub'){
-      ctx.strokeStyle='rgba(255,255,255,0.28)'; ctx.lineWidth=1.5; ctx.setLineDash([4,4]);
-      ctx.beginPath(); ctx.arc(hoveredNode.x,hoveredNode.y,hoveredNode.radius+9,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
-    }
-    if(frameCount%10===0) updateMetrics();
-    if(systemLatency>14) systemLatency=Math.max(14,systemLatency*0.995);
+  function switchLayer(layer, btn) {
+    const canvas = document.getElementById('gmapsCanvas');
+    document.querySelectorAll('.layer-toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if(layer === 'satellite') canvas.classList.add('satellite');
+    else canvas.classList.remove('satellite');
   }
 
-  function boot(){
-    initCoastalNodes();
-    resize();
-    window.addEventListener('resize',resize);
-    logTerminal('system','Hybrid Smart Microgrid v3 — Dual Mode System Initialized.');
-    logTerminal('system','Mode: Coastal Mesh — 20 lights, ESP-NOW multi-hop routing (BFS).');
-    logTerminal('system','Click a coastal light to see mesh hops transmitting JSON payload to hub.');
-    logTerminal('system','Use top switch to change to Urban LoRa: 30 lights, direct LoRa via gateway (no hops).');
-    logTerminal('system','Click HUB to view battery %, nodes_working, network_type.');
-    requestAnimationFrame(render);
-    setInterval(()=>{
-      // Only hub has battery - street lights are mains powered, no SoC decay
-      if(hubNode) hubNode.soc=Math.max(70,Math.min(100,hubNode.soc+(Math.random()-0.5)*0.6));
-      if(hubNode && hubNode.targetBrightness<0.42) hubNode.targetBrightness=0.38+Math.random()*0.06;
-    },3500);
+  // ============ CONTROLS ============
+  function startAutoSimulation() {
+    if (autoSimInterval) clearInterval(autoSimInterval);
+    autoSimInterval = setInterval(() => {
+      if (!isAutoSimulating) return;
+      simTime += 0.05; if(simTime >= 24) simTime = 0;
+      updateTimeDisplay(); updatePoles();
+    }, 150);
   }
-  boot();
-})();
+
+  document.getElementById('timeSlider').addEventListener('input', function() {
+    simTime = parseFloat(this.value); isRaining = false;
+    updateTimeDisplay(); updatePoles();
+  });
+
+  function toggleSimulation(btn) {
+    isAutoSimulating = !isAutoSimulating;
+    btn.textContent = isAutoSimulating ? '⏸ Pause' : '▶ Auto Simulate';
+    btn.classList.toggle('active', isAutoSimulating);
+  }
+
+  function simulateRain() {
+    isRaining = !isRaining;
+    addLog('relay', isRaining ? '🌧️ Rain: LDR Override Active' : '☀️ Clear: Normal Schedule');
+    updatePoles();
+  }
+
+  function simulateFault() {
+    if(faultPole >= 0) {
+      addLog('heartbeat', `🔧 NODE ${faultPole+1}: Restored`);
+      faultPole = -1; updatePoles(); return;
+    }
+    do { faultPole = Math.floor(Math.random() * POLES_COUNT); } while (faultPole === GATEWAY_INDEX);
+    addLog('event-off', `⚠️ NODE ${faultPole+1}: FAULT!`);
+    updatePoles();
+  }
+
+  function triggerRandomHeartbeat() {
+    const p = Math.floor(Math.random() * POLES_COUNT);
+    if(p !== faultPole) addLog('heartbeat', `💓 Node ${p+1} → Cloud (${15+Math.floor(Math.random()*20)}ms)`);
+  }
+
+  function addLog(type, msg) {
+    const log = document.getElementById('eventLog');
+    const d = document.createElement('div');
+    d.className = `log-entry ${type}`;
+    d.textContent = `[${getTimeString(simTime)}] ${msg}`;
+    log.prepend(d);
+    if(log.children.length > 30) log.removeChild(log.lastChild);
+  }
+
+  function togglePole(i) {
+    if(i===faultPole) return;
+    poleStates[i] = !poleStates[i];
+    document.getElementById(`pole-${i}`).className = `pole-unit ${poleStates[i]?'on':'off'}`;
+    addLog(poleStates[i]?'event-on':'event-off', `🔧 Manual: Node ${i+1} ${poleStates[i]?'ON':'OFF'}`);
+  }
+
+  function openDashboard() { document.getElementById('dashOverlay').classList.add('show'); }
+  function closeDashboard() { document.getElementById('dashOverlay').classList.remove('show'); }
+
+  window.addEventListener('resize', drawCommLines);
+  init();
 </script>
+
 </body>
 </html>
